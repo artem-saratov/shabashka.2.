@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ШАБАШКА.РУ — Биржа подработки в Саратове и области</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{background:#0f172a;color:#f8fafc;line-height:1.45;padding-bottom:40px}
+header{background:#1e293b;border-bottom:1px solid #334155;padding:14px 18px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:21px;font-weight:900;letter-spacing:.5px;color:#fff}
+.logo span{color:#f59e0b}
+.btn-add{background:#f59e0b;color:#0f172a;border:none;padding:9px 14px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:18px}
+.search-box{display:flex;gap:8px;margin-bottom:14px}
+.search-box input,.search-box select{background:#1e293b;border:1px solid #334155;color:#fff;padding:11px 12px;border-radius:10px;font-size:14px}
+.search-box input{flex:1}
+.cats{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px}
+.cat-btn{background:#1e293b;border:1px solid #334155;color:#cbd5e1;padding:7px 13px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer}
+.cat-btn.active{background:#f59e0b;border-color:#f59e0b;color:#0f172a}
+.task-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:14px}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.task-title{font-size:18px;font-weight:800;color:#fff}
+.task-pay{background:rgba(16,185,129,.15);color:#34d399;font-weight:900;font-size:16px;padding:5px 10px;border-radius:8px;white-space:nowrap}
+.task-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#94a3b8;margin-bottom:10px}
+.badge{background:#0f172a;padding:3px 8px;border-radius:6px;color:#cbd5e1}
+.client-box{display:flex;align-items:center;justify-content:space-between;background:#0f172a;border:1px solid #334155;padding:8px 12px;border-radius:10px;margin-bottom:10px;font-size:13px}
+.client-name{font-weight:700;color:#f8fafc}
+.rating-pill{background:rgba(245,158,11,.15);color:#fbbf24;font-weight:800;padding:2px 8px;border-radius:6px;font-size:12px}
+.deals-cnt{color:#94a3b8;font-size:12px;margin-left:6px}
+.task-desc{font-size:14px;color:#e2e8f0;margin-bottom:14px}
+.task-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #334155}
+.replies-btn{background:none;border:none;font-size:13px;color:#94a3b8;font-weight:700;cursor:pointer;padding:4px 0}
+.replies-btn:hover{color:#fff}
+.btn-reply{background:#3b82f6;color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer}
+.workers-list{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #334155;flex-direction:column;gap:8px}
+.workers-list.open{display:flex}
+.worker-card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:11px 12px}
+.worker-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px}
+.worker-name{font-weight:800;font-size:14px;color:#fff}
+.worker-about{font-size:13px;color:#cbd5e1;margin-bottom:4px}
+.worker-note{font-size:12px;color:#38bdf8;font-style:italic}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;justify-content:center;align-items:center;padding:16px}
+.modal-box{background:#1e293b;border:1px solid #f59e0b;border-radius:16px;padding:20px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-box h3{margin-bottom:12px;font-size:20px}
+.field{width:100%;padding:11px;margin-bottom:10px;border-radius:9px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:14px}
+.close-btn{background:none;border:none;color:#94a3b8;width:100%;margin-top:10px;cursor:pointer;font-size:14px}
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">ШАБАШКА<span>.РУ</span></div>
+    <button class="btn-add" onclick="openAdd()">+ Дать заказ</button>
+</header>
+<div class="wrap">
+    <div class="search-box">
+        <input type="text" id="qInput" placeholder="Поиск (напр. бетон, газель, проводка)..." oninput="render()">
+        <select id="areaFilter" onchange="render()">
+            <option value="all">Все районы</option>
+            <option value="Усть-Курдюм">Усть-Курдюм</option>
+            <option value="Саратов">Саратов</option>
+            <option value="Энгельс">Энгельс</option>
+        </select>
+    </div>
+    <div class="cats">
+        <button class="cat-btn active" onclick="setCat('all',this)">Все шабашки</button>
+        <button class="cat-btn" onclick="setCat('Стройка',this)">Стройка и ремонт</button>
+        <button class="cat-btn" onclick="setCat('Авто',this)">Перевозки / Авто</button>
+        <button class="cat-btn" onclick="setCat('Участок',this)">Участок и двор</button>
+        <button class="cat-btn" onclick="setCat('Электрика',this)">Электрика / Сантехника</button>
+    </div>
+    <div id="feed"></div>
+</div>
+
+<div class="modal" id="addModal" onclick="if(event.target===this) closeAdd()">
+    <div class="modal-box">
+        <h3>Разместить шабашку</h3>
+        <input type="text" class="field" id="tClient" placeholder="Ваше имя (заказчик)">
+        <input type="text" class="field" id="tTitle" placeholder="Что нужно сделать? (напр. Уложить плитку)">
+        <select class="field" id="tCat">
+            <option value="Стройка">Стройка и ремонт</option>
+            <option value="Авто">Перевозки / Авто</option>
+            <option value="Участок">Участок и двор</option>
+            <option value="Электрика">Электрика / Сантехника</option>
+        </select>
+        <select class="field" id="tArea">
+            <option value="Усть-Курдюм">Усть-Курдюм</option>
+            <option value="Саратов">Саратов</option>
+            <option value="Энгельс">Энгельс</option>
+        </select>
+        <input type="number" class="field" id="tPay" placeholder="Оплата в рублях (напр. 5000)">
+        <textarea class="field" id="tDesc" rows="3" placeholder="Подробности: инструмент, сроки, адрес..."></textarea>
+        <button class="btn-add" style="width:100%;padding:12px" onclick="saveTask()">Опубликовать в ленту</button>
+        <button class="close-btn" onclick="closeAdd()">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="replyModal" onclick="if(event.target===this) closeReply()">
+    <div class="modal-box">
+        <h3 id="rTitle">Отклик на заказ</h3>
+        <input type="text" class="field" id="rName" placeholder="Ваше имя">
+        <input type="tel" class="field" id="rPhone" placeholder="Телефон или Telegram">
+        <textarea class="field" id="rAbout" rows="2" placeholder="Кратко о себе и опыте (напр. Бригада 2 чел., свой инструмент, стаж 5 лет)"></textarea>
+        <input type="text" class="field" id="rNote" placeholder="Комментарий к заказу (когда готовы выйти)">
+        <button class="btn-reply" style="width:100%;padding:12px" onclick="sendReply()">Отправить отклик заказчику</button>
+        <button class="close-btn" onclick="closeReply()">Закрыть</button>
+    </div>
+</div>
+<script>
+let curCat='all', activeId=null, openReplies={};
+
+const defaultTasks=[
+    {
+        id:1,
+        title:'Помочь выгрузить 4 поддона тротуарной плитки',
+        cat:'Стройка',
+        area:'Усть-Курдюм',
+        pay:4500,
+        desc:'Нужны 2 крепких парня на 3–4 часа завтра утром. Манипулятор разгрузит у ворот, нужно перенести на участок.',
+        client:{name:'Алексей В.',rating:4.9,deals:14},
+        workers:[
+            {name:'Дмитрий К.',rating:4.8,deals:21,about:'Работаем вдвоём с напарником, крепкие, без вредных привычек.',note:'Готовы подъехать к 9:00 утра.'},
+            {name:'Сергей М.',rating:5.0,deals:9,about:'Занимаюсь благоустройством участков в Усть-Курдюме, есть свои тачки и перчатки.',note:'Могу выйти завтра в любое время.'}
+        ]
+    },
+    {
+        id:2,
+        title:'Довезти стройматериалы из Леруа на прицепе / пикапе',
+        cat:'Авто',
+        area:'Саратов',
+        pay:3500,
+        desc:'Маршрут: Усть-Курдюмское шоссе — район Волжского. 15 мешков смеси и профиль. Оплата сразу на карту.',
+        client:{name:'Михаил П.',rating:5.0,deals:7},
+        workers:[
+            {name:'Руслан А.',rating:4.9,deals:33,about:'Пикап + двухосный прицеп 3.5м, вожу стройматериалы по области аккуратно.',note:'Буду через 30 минут у Леруа.'}
+        ]
+    },
+    {
+        id:3,
+        title:'Собрать щиток и развести свет в гараже',
+        cat:'Электрика',
+        area:'Энгельс',
+        pay:7000,
+        desc:'Материал закуплен, нужно аккуратно проложить кабель в гофре и поставить 4 автомата.',
+        client:{name:'Елена С.',rating:4.7,deals:5},
+        workers:[]
+    },
+    {
+        id:4,
+        title:'Выровнять грунт и расчистить участок от веток',
+        cat:'Участок',
+        area:'Усть-Курдюм',
+        pay:5000,
+        desc:'Работа на день. Тачки и лопаты на месте есть.',
+        client:{name:'Игорь Т.',rating:4.8,deals:11},
+        workers:[]
+    }
+];
+
+let tasks=JSON.parse(localStorage.getItem('shabashka_tasks_v2'))||defaultTasks;
+
+function syncStorage(){
+    localStorage.setItem('shabashka_tasks_v2',JSON.stringify(tasks));
+}
+
+function setCat(c,btn){
+    curCat=c;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+}
+
+function toggleWorkers(id){
+    openReplies[id]=!openReplies[id];
+    render();
+}
+
+function render(){
+    const q=document.getElementById('qInput').value.toLowerCase();
+    const ar=document.getElementById('areaFilter').value;
+    const box=document.getElementById('feed');
+    box.innerHTML='';
+
+    tasks.filter(t=>(curCat==='all'||t.cat===curCat)&&(ar==='all'||t.area===ar)&&(t.title.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q))).forEach(t=>{
+        const wList=t.workers||[];
+        const isOpen=!!openReplies[t.id];
+        const workersHTML=wList.length
+            ? wList.map(w=>`
+                <div class="worker-card">
+                    <div class="worker-head">
+                        <span class="worker-name">👷 ${w.name}</span>
+                        <div>
+                            <span class="rating-pill">★ ${w.rating.toFixed(1)}</span>
+                            <span class="deals-cnt">${w.deals} работ</span>
+                        </div>
+                    </div>
+                    <div class="worker-about">${w.about}</div>
+                    ${w.note?`<div class="worker-note">💬 «${w.note}»</div>`:''}
+                </div>
+            `).join('')
+            : `<div style="font-size:13px;color:#94a3b8">Пока никто не откликнулся. Будьте первым!</div>`;
+
+        box.innerHTML+=`
+        <div class="task-card">
+            <div class="task-top">
+                <div class="task-title">${t.title}</div>
+                <div class="task-pay">${t.pay.toLocaleString('ru-RU')} ₽</div>
+            </div>
+            <div class="task-meta">
+                <span class="badge">📍 ${t.area}</span>
+                <span class="badge">🔧 ${t.cat}</span>
+                <span class="badge">🛡️ Безопасная сделка</span>
+            </div>
+            <div class="client-box">
+                <div><span style="color:#94a3b8">Заказчик:</span> <span class="client-name">${t.client.name}</span></div>
+                <div>
+                    <span class="rating-pill">★ ${t.client.rating.toFixed(1)}</span>
+                    <span class="deals-cnt">(${t.client.deals} сделок)</span>
+                </div>
+            </div>
+            <div class="task-desc">${t.desc}</div>
+            <div class="task-foot">
+                <button class="replies-btn" onclick="toggleWorkers(${t.id})">
+                    Откликов: ${wList.length} ${isOpen?'▴':'▾'}
+                </button>
+                <button class="btn-reply" onclick="openReply(${t.id})">Откликнуться</button>
+            </div>
+            <div class="workers-list ${isOpen?'open':''}">
+                ${workersHTML}
+            </div>
+        </div>`;
+    });
+}
+
+function openAdd(){document.getElementById('addModal').style.display='flex';}
+function closeAdd(){document.getElementById('addModal').style.display='none';}
+
+function saveTask(){
+    const clientName=document.getElementById('tClient').value.trim()||'Новый заказчик';
+    const title=document.getElementById('tTitle').value.trim();
+    const pay=parseInt(document.getElementById('tPay').value);
+    const desc=document.getElementById('tDesc').value.trim();
+    if(!title||!pay){alert('Укажите название и оплату!');return;}
+    tasks.unshift({
+        id:Date.now(),
+        title,
+        cat:document.getElementById('tCat').value,
+        area:document.getElementById('tArea').value,
+        pay,
+        desc:desc||'Подробности по телефону.',
+        client:{name:clientName,rating:5.0,deals:0},
+        workers:[]
+    });
+    syncStorage();
+    document.getElementById('tTitle').value='';
+    document.getElementById('tPay').value='';
+    document.getElementById('tDesc').value='';
+    closeAdd();
+    render();
+}
+
+function openReply(id){
+    activeId=id;
+    const t=tasks.find(x=>x.id===id);
+    document.getElementById('rTitle').innerText='Отклик: '+t.title;
+    document.getElementById('replyModal').style.display='flex';
+}
+function closeReply(){document.getElementById('replyModal').style.display='none';}
+
+function sendReply(){
+    const n=document.getElementById('rName').value.trim();
+    const p=document.getElementById('rPhone').value.trim();
+    const about=document.getElementById('rAbout').value.trim()||'Исполнитель без подробного описания.';
+    const note=document.getElementById('rNote').value.trim();
+    if(!n||!p){alert('Заполните имя и телефон!');return;}
+    const t=tasks.find(x=>x.id===activeId);
+    if(t){
+        if(!t.workers) t.workers=[];
+        t.workers.push({name:n,rating:5.0,deals:0,about,note});
+        openReplies[t.id]=true;
+    }
+    syncStorage();
+    document.getElementById('rName').value='';
+    document.getElementById('rPhone').value='';
+    document.getElementById('rAbout').value='';
+    document.getElementById('rNote').value='';
+    closeReply();
+    render();
+}
+
+render();
+</script>
+</body>
+</html>
